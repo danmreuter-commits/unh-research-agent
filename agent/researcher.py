@@ -2,11 +2,14 @@
 Research engine: breaks the daily scan into 3 focused search blocks that run
 sequentially, avoiding rate-limit errors caused by one massive API call.
 
-Each block uses claude-sonnet-4-6 (cheaper, same search quality) with a
-short, targeted prompt. A 15-second pause between blocks keeps token-per-
-minute usage well within Anthropic's standard rate limits.
+Each block uses claude-sonnet-4-6 with a short, targeted prompt.
+A 15-second pause between blocks keeps token-per-minute usage well within
+Anthropic's standard rate limits.
 
-claude-opus-4-6 is NOT used here — only in emailer.py for the final digest.
+Focus areas:
+  1. Direct competitor news (CVS/Aetna, Elevance, Centene, Humana, Privia, BCBS)
+  2. CMS / Medicare regulations, rate notices, and Chris Klomp statements
+  3. Broader managed care market signals
 """
 
 import logging
@@ -17,34 +20,33 @@ import anthropic
 
 import config
 from data.competitors import (
-    COMPETITOR_DOMAIN_KEYWORDS,
     DIRECT_COMPETITOR_NAMES,
-    INDIRECT_COMPETITOR_NAMES,
+    REGULATORY_KEYWORDS,
 )
 
 logger = logging.getLogger(__name__)
 
-# ── Compact system prompt (sent with every search block) ─────────────────────
-# Kept short on purpose — the full competitor context is NOT needed here.
-# Each block prompt carries its own specific instructions.
+# ── Compact system prompt ─────────────────────────────────────────────────────
 
 _SEARCH_SYSTEM = """\
-You are a competitive intelligence analyst for Guidewire Software (GWRE), \
-the #1 P&C insurance core system (policy admin, billing, claims).
+You are a competitive and regulatory intelligence analyst for UnitedHealth Group (UNH), \
+the largest U.S. health insurer and managed care company (UnitedHealthcare + Optum).
 
-DIRECT competitors: Duck Creek Technologies, Majesco, Sapiens International, \
-Insurity, OneShield, EIS Group, Socotra, Instanda, FINEOS, Applied Systems.
+DIRECT competitors: CVS Health/Aetna, Elevance Health (Anthem), Centene, Humana, \
+Privia Health, Blue Cross Blue Shield (BCBS), Molina Healthcare, Kaiser Permanente.
 
-INDIRECT competitors (AI point solutions expanding into core territory): \
-Shift Technology, Gradient AI, Snapsheet, Five Sigma, CLARA Analytics, \
-Tractable, Betterview, Cape Analytics, CCC Intelligent Solutions.
+KEY REGULATORY FOCUS: CMS (Centers for Medicare & Medicaid Services) — Medicare Advantage \
+rate notices, final rules, Star Ratings, RADV audits, prior authorization rules, Medicaid \
+managed care. Also monitor Chris Klomp (CMS Medicare Administrator) for any public statements.
 
 For each finding, output one line in this EXACT format (pipe-delimited):
-FINDING|||[Company]|||[investment|product|metrics|partnership|platform_shift|vc_signal]|||[HIGH|MEDIUM]|||[VC firm or N/A]|||[One sentence with key detail: $amount, product name, carrier name, etc.]|||[Source URL]
+FINDING|||[Company or Agency]|||[competitor_news|cms_regulation|rate_notice|star_ratings|ma_policy|medicaid|market_signal|earnings]|||[HIGH|MEDIUM]|||[Source or N/A]|||[One sentence with key detail: policy change, $ impact, enrollment figure, quote, etc.]|||[Source URL]
 
-HIGH relevance: direct competitor funding/product/customer win; carrier leaving Guidewire; \
-AI tool expanding into full platform.
-MEDIUM relevance: insurtech Series B+ for claims/policy/billing; VC blog about core-system disruption.
+HIGH relevance: CMS rate notice or final rule with material MA financial impact; Chris Klomp public statement on Medicare policy; \
+direct competitor announces major MA expansion/exit or strategic shift; antitrust/regulatory action against managed care; \
+Star Ratings change affecting MA bonus payments; large employer or government contract switches managed care plan.
+MEDIUM relevance: competitor earnings showing notable MA enrollment change or MLR shift; state Medicaid contract award/loss; \
+value-based care company raises significant funding competing with Optum; CMS proposes new MA audit or compliance rule.
 Do NOT output LOW relevance findings.
 When done searching, output: BLOCK_COMPLETE
 """
@@ -59,56 +61,60 @@ def _date_range() -> str:
 
 _SEARCH_BLOCKS = [
     {
-        "name": "direct_competitors",
+        "name": "competitor_news",
         "prompt_template": """\
 Search for news from the past 7 days ({date_range}) about these \
-Guidewire direct competitors:
+UnitedHealth Group direct competitors:
 
-• Duck Creek Technologies — product news, funding, customer wins
-• Majesco (MJCO) — earnings, new releases, customer announcements
-• Sapiens International (SPNS) — M&A, product, customer news
-• Insurity — funding, product, partnerships
-• OneShield / EIS Group — new deals or product launches
-• Socotra — funding rounds, new carrier customers, product updates
-• Instanda — funding, growth metrics, new markets
+• CVS Health / Aetna — Medicare Advantage strategy, earnings, enrollment changes, PBM news, MinuteClinic/Oak Street expansion
+• Elevance Health (Anthem) — Medicare Advantage, Medicaid, earnings, acquisitions, care delivery expansion
+• Centene Corporation — Medicaid contract wins/losses, Medicare Advantage growth, state contract news
+• Humana — Medicare Advantage enrollment, CenterWell primary care, earnings, strategic announcements
+• Privia Health — value-based care expansion, physician group acquisitions, Optum competition
+• Blue Cross Blue Shield (BCBS) / HCSC — Medicare Advantage market moves, employer contract news, M&A
 
-Search for each company name + "news" or "announcement" or "funding" 2025 2026.
-Output all HIGH and MEDIUM relevance FINDING||| lines you find, then: BLOCK_COMPLETE""",
+Search each company + "Medicare Advantage" OR "earnings" OR "announcement" OR "enrollment" 2025 2026.
+Output all HIGH and MEDIUM relevance FINDING||| lines, then: BLOCK_COMPLETE""",
     },
     {
-        "name": "ai_insurtech_and_vc",
+        "name": "cms_medicare_regulations",
         "prompt_template": """\
-Search for news from the past 7 days ({date_range}) about:
+Search for news and announcements from the past 7 days ({date_range}) about:
 
-PART A — AI insurance companies expanding into core-system territory:
-• Shift Technology — new deals, funding, product expansion
-• Gradient AI — funding, underwriting/claims product news
-• Snapsheet, Five Sigma, CLARA Analytics — funding or product launches
-• Tractable, Betterview, Cape Analytics — new partnerships or funding
+PART A — CMS Medicare and Medicaid policy:
+• CMS Medicare Advantage rate notice OR final rule 2025 2026 — any new announcements, proposed rules, or finalized rates
+• CMS Star Ratings update — any new releases, methodology changes, or appeals news
+• CMS RADV audit — risk adjustment data validation settlements, new rules, or industry response
+• CMS prior authorization rule — Medicare Advantage prior auth requirements, implementation updates
+• CMS ACO REACH OR value-based care model — new model launches, changes, or participant updates
+• Medicaid managed care — rate-setting, contract awards, state waivers, redeterminations
+• Medicare Part D — premium changes, benefit redesign, IRA implementation updates
 
-PART B — VC portfolio announcements in insurance tech:
-• Search: "Anthemis" OR "QED Investors" OR "Munich Re Ventures" insurance investment 2026
-• Search: "Nationwide Ventures" OR "XL Innovate" OR "Aquiline" insurtech portfolio news
-• Search: "Insight Partners" OR "TCV" OR "General Catalyst" insurance software investment 2026
-• Search: Ribbit Capital OR Mundi Ventures insurtech 2026
+PART B — Chris Klomp specifically:
+• Search: "Chris Klomp" — any LinkedIn posts, speeches, congressional testimony, interviews, or public statements
+• Search: "Chris Klomp CMS" OR "Chris Klomp Medicare" 2025 2026
+• Search: CMS Medicare administrator statement OR announcement {month_year}
 
 Output all HIGH and MEDIUM relevance FINDING||| lines, then: BLOCK_COMPLETE""",
     },
     {
         "name": "market_signals",
         "prompt_template": """\
-Search for news from the past 7 days ({date_range}) about broader \
-P&C insurance technology market signals:
+Search for news from the past 7 days ({date_range}) about broader managed care \
+and health insurance market signals relevant to UnitedHealth Group:
 
-• insurtech funding round Series B C D 2026 "policy administration" OR "claims management" OR "billing"
-• insurance carrier "replaced" OR "migrated" OR "switched from" Guidewire
-• new P&C insurance platform startup raised funding 2026
-• Guidewire competitor announcement {month_year}
-• VC partner blog post insurtech investment thesis 2026
+• Medicare Advantage "enrollment" OR "market share" OR "exit" OR "expansion" 2026
+• health insurer "medical loss ratio" OR "MLR" deterioration OR improvement 2026
+• managed care "antitrust" OR "DOJ" OR "FTC" OR "vertical integration" 2026
+• "switching from UnitedHealthcare" OR "leaving UnitedHealthcare" employer contract 2026
+• Optum competitor announcement OR "value-based care" acquisition {month_year}
+• health plan "prior authorization" legislation OR regulation 2026
+• Medicare Advantage "overpayment" OR "upcoding" OR "risk adjustment" investigation 2026
+• managed care earnings "guidance" OR "outlook" OR "cost trend" 2026
 
-Also search for any of these lesser-covered names with recent news:
-Unqork insurance, Appian insurance platform, Lemonade technology platform, \
-Kin Insurance platform, CCC Intelligent Solutions news.
+Also search:
+• Oscar Health OR Clover Health OR Bright Health — Medicare Advantage news, funding, market moves
+• Amazon health OR One Medical OR Walmart Health — employer benefits or primary care expansion competing with Optum
 
 Output all HIGH and MEDIUM relevance FINDING||| lines, then: BLOCK_COMPLETE""",
     },
@@ -157,8 +163,8 @@ def _run_block(client: anthropic.Anthropic, block: dict) -> list[dict]:
 
     while continuations <= max_cont:
         response = client.messages.create(
-            model="claude-sonnet-4-6",   # cheaper than Opus; same search quality
-            max_tokens=3000,             # sufficient for focused block output
+            model="claude-sonnet-4-6",
+            max_tokens=3000,
             system=_SEARCH_SYSTEM,
             tools=[{"type": "web_search_20260209", "name": "web_search"}],
             messages=messages,
@@ -183,20 +189,16 @@ def _run_block(client: anthropic.Anthropic, block: dict) -> list[dict]:
 
 # ── Main entry point ──────────────────────────────────────────────────────────
 
-BLOCK_PAUSE_SECONDS = 15   # pause between blocks to stay within rate limits
+BLOCK_PAUSE_SECONDS = 15
 
 
 def run_research() -> list[dict]:
     """
     Run daily research across 3 sequential focused search blocks.
-
-    Using claude-sonnet-4-6 per block keeps each call small enough to
-    avoid rate-limit errors. Blocks run sequentially with a 15-second
-    pause between them.
     """
     client = anthropic.Anthropic(
         api_key=config.ANTHROPIC_API_KEY,
-        timeout=180.0,   # 3-minute timeout per block
+        timeout=180.0,
     )
 
     all_findings: list[dict] = []
@@ -221,13 +223,11 @@ def run_research() -> list[dict]:
                 block["name"], exc,
             )
 
-        # Pause between blocks (skip after the last one)
         if i < len(_SEARCH_BLOCKS) - 1:
             logger.debug("Pausing %d s before next block …", BLOCK_PAUSE_SECONDS)
             time.sleep(BLOCK_PAUSE_SECONDS)
 
-    # Deduplicate within this run (same company+type from multiple blocks)
-    seen:   set[str]   = set()
+    seen:    set[str]  = set()
     deduped: list[dict] = []
     for f in all_findings:
         key = f"{f['company'].lower()}|{f['type'].lower()}"
@@ -235,7 +235,6 @@ def run_research() -> list[dict]:
             seen.add(key)
             deduped.append(f)
 
-    # HIGH findings first
     deduped.sort(key=lambda f: (0 if f.get("relevance") == "HIGH" else 1))
 
     logger.info(

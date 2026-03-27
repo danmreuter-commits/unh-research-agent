@@ -1,104 +1,95 @@
-"""Guidewire competitive landscape knowledge base used to power research prompts."""
+"""UnitedHealth Group (UNH) competitive landscape and regulatory intelligence knowledge base."""
 
-GUIDEWIRE_CONTEXT = """
-ABOUT GUIDEWIRE (GWRE):
-Guidewire Software is the system of record for Property & Casualty (P&C) insurance companies globally.
+UNH_CONTEXT = """
+ABOUT UNITEDHEALTH GROUP (UNH):
+UnitedHealth Group is the largest U.S. health insurance and managed care company by revenue and membership.
 
-CORE PRODUCTS:
-- PolicyCenter: Policy administration system — underwriting, policy lifecycle management, rating
-- BillingCenter: Billing management — premium collection, payment processing, disbursements
-- ClaimCenter: Claims management — FNOL, adjudication, payments, litigation management
-- InsuranceSuite: Combined platform (PolicyCenter + BillingCenter + ClaimCenter)
-- Guidewire Cloud: Cloud-hosted SaaS version of InsuranceSuite
-- InsuranceNow: Lightweight SaaS for smaller/regional carriers
-- Guidewire Marketplace: Ecosystem of 200+ partner apps
-- DataHub / InfoCenter: Analytics, data warehouse, reporting
-
-TARGET CUSTOMERS: Tier 1, 2, and 3 P&C insurers globally — auto, homeowners, commercial, specialty lines
-BUSINESS MODEL: Annual cloud SaaS subscriptions + professional services
-MARKET POSITION: #1 core systems vendor for P&C insurance globally; ~500 carrier customers
+CORE BUSINESS SEGMENTS:
+- UnitedHealthcare: Health benefits — employer-sponsored, Medicare Advantage (MA), Medicaid managed care, individual/exchange plans
+- Optum: Health services — OptumHealth (care delivery), OptumInsight (data/analytics/technology), OptumRx (pharmacy benefit management)
+TARGET CUSTOMERS: Employers, Medicare/Medicaid beneficiaries, government programs, individual members
+BUSINESS MODEL: Premium revenue + fee-based health services; vertically integrated across insurance and care delivery
+MARKET POSITION: Largest U.S. health insurer by membership; largest Medicare Advantage plan; largest PBM through OptumRx
 
 ---
 
-DIRECT COMPETITORS — core system replacements (highest priority):
-- Duck Creek Technologies: Policy, billing, claims suite; owned by Vista Equity Partners
-- Majesco: Cloud-native insurance platform (Nasdaq: MJCO); CloudInsurer product
-- Sapiens International: P&C and L&H insurance software globally (Nasdaq: SPNS)
-- Insurity: Policy, billing, claims for specialty and personal lines; owned by GI Partners
-- OneShield Enterprise: Mid-market P&C software
-- Applied Systems: Commercial lines management software
-- EIS Group: Modern core insurance platform targeting greenfield carriers
-- Socotra: Cloud-native, API-first policy administration platform; backed by TCV
-- Instanda: No-code policy administration; backed by MS&AD Ventures
-- FINEOS: Claims and benefits management for L&H/Workers Comp (ASX: FCL)
-- Unqork: No-code enterprise platform used by carriers for policy/claims
-- Appian: Low-code platform used in insurance workflows (Nasdaq: APPN)
-- Salesforce Financial Services Cloud: CRM expanding into insurance workflows
-- ServiceNow: Workflow platform expanding into insurance operations
+DIRECT COMPETITORS — health insurance and managed care:
+- CVS Health / Aetna: Full-stack managed care + pharmacy (CVS/Caremark PBM + MinuteClinic + Aetna insurance)
+- Elevance Health (formerly Anthem): Second-largest U.S. health insurer; Blue Cross Blue Shield licensee; strong Medicare and Medicaid
+- Centene Corporation: Largest Medicaid managed care organization; growing Medicare Advantage footprint
+- Humana: Medicare-focused insurer; primary care delivery (CenterWell); strong Medicare Advantage market share
+- Privia Health: Physician enablement and value-based care organization; competes with Optum care delivery
+- Blue Cross Blue Shield (BCBS): National federation of 35+ local plans; largest collective enrollment; major MA competitor in every market
+- Molina Healthcare: Medicaid and Medicare-focused managed care; state government contracts
+- Kaiser Permanente: Integrated health system; largest nonprofit MA plan
+- Health Care Service Corporation (HCSC): BCBS licensee in 5 states; major employer and MA competitor
 
-INDIRECT COMPETITORS — AI/ML point solutions expanding into core system territory (medium priority):
-- Shift Technology: AI-powered fraud detection and claims automation; Series D (~$220M raised)
-- Gradient AI: ML for underwriting pricing and claims severity prediction
-- Snapsheet: Digital claims management, virtual appraisals; backed by Insight Partners
-- Five Sigma: AI-native claims management platform
-- CLARA Analytics: AI for claims management (litigation, medical)
-- Tractable: AI for accident and disaster recovery claims
-- Bdeo: Visual intelligence for claims (Europe/LatAm)
-- Betterview: Property intelligence/aerial imagery for underwriting
-- Cape Analytics: AI property analytics for underwriting
-- Verisk (Nasdaq: VRSK): Data analytics for insurance; Property Estimating Solutions
-- LexisNexis Risk Solutions (RELX): Data and analytics for underwriting
-- CCC Intelligent Solutions: Auto claims ecosystem (Nasdaq: CCCS)
-- Mitchell International: Auto physical damage claims
-- Solera / Audatex: Auto claims workflow
-
-EMERGING THREAT — new carrier platforms bypassing Guidewire entirely (watch closely):
-- Lemonade (NYSE: LMND): Tech-forward carrier; selling AI/tech platform to other insurers
-- Kin Insurance: Home insurance tech platform; cloud-native stack
-- Branch Insurance: Bundled auto/home with proprietary tech
-- Openly: Home insurance MGA on modern platform
-- Clearcover: Auto insurance on proprietary modern stack
-- Wisk / Covie / other MGAs: Cloud-native platforms potentially replacing legacy core systems
+INDIRECT COMPETITORS — adjacent health services expanding into UNH territory:
+- Amazon / One Medical: Primary care delivery + pharmacy (Amazon Pharmacy); expanding into employer health benefits
+- Walmart Health: Retail health clinics and primary care; employer health benefit partnerships
+- Oscar Health: Tech-forward individual and small group insurance; expanding into MA
+- Clover Health: Medicare Advantage with AI-driven care management
+- Bright Health: Medicare Advantage (restructuring/wind-down monitoring)
 
 ---
 
-WHAT MAKES A FINDING RELEVANT TO GUIDEWIRE:
+REGULATORY INTELLIGENCE — highest priority monitoring:
+CMS (Centers for Medicare & Medicaid Services):
+- Medicare Advantage rate notices and final rules (Annual Rate Announcement — typically February/April)
+- Medicare Part D premium and benefit changes
+- Star Ratings updates (October release; directly tied to MA bonus payments)
+- RADV (Risk Adjustment Data Validation) audit rules and settlements
+- Prior authorization rule changes (MA plans)
+- ACO REACH and value-based care program updates
+- Medicaid managed care rate-setting, contract awards, and redeterminations
+- CMS Innovation Center (CMMI) model launches and changes
+
+KEY CMS OFFICIALS TO MONITOR:
+- Chris Klomp: Administrator overseeing Medicare at CMS; any public statements, testimony, speeches, LinkedIn posts, or interviews
+- CMS Administrator: Overall CMS policy direction
+- CMMI Director: Value-based care model announcements
+
+---
+
+WHAT MAKES A FINDING RELEVANT TO UNH:
 HIGH relevance:
-- Direct competitor raises funding, acquires company, or launches major product update
-- New cloud-native P&C core system platform raises significant capital
-- A carrier publicly announces switching FROM Guidewire to a competitor
-- AI claims/policy company expands from point solution into full platform
+- CMS issues Medicare Advantage rate notice, final rule, or policy change with material financial impact
+- Chris Klomp makes public statement or post about Medicare, MA rates, or CMS policy direction
+- Direct competitor (CVS/Aetna, Elevance, Centene, Humana) announces major MA expansion, exit, or strategic shift
+- Large employer or government entity switches MA or managed care contracts away from UNH to a competitor
+- DOJ/FTC antitrust action related to health insurance, PBM, or vertical integration
+- CMS Star Ratings change materially affecting MA bonus payments
+- Congressional or regulatory action threatening MA reimbursement rates or plan requirements
 
 MEDIUM relevance:
-- Insurtech raises Series B+ from a top VC for claims/policy/billing tech
-- Established carrier tech company announces new AI features competing with Guidewire modules
-- Major VC publishes blog/research positioning insurtech as core system disruption
-- New MGA/carrier startup chooses a modern alternative platform over Guidewire
+- Competitor reports earnings with notable MA enrollment gain/loss or MLR deterioration
+- State Medicaid contract award or loss for a direct competitor
+- Employer benefits consultant publishes analysis on managed care market shifts
+- Value-based care or care delivery company raises significant funding competing with Optum
+- CMS proposes new audit, compliance, or reporting requirement for MA plans
 
 LOW relevance (exclude):
-- Pure consumer/D2C insurers (car insurance apps, pet insurance, etc.)
-- Life/health/dental insurance technology (not P&C)
-- Pure distribution/brokerage tech (comparative raters, agency management)
-- Small pre-seed / seed rounds under $5M
-- International markets with no Guidewire presence
+- Small regional health plans with no national MA or Medicaid overlap
+- Hospital/health system news unrelated to managed care or value-based contracting
+- Pre-seed/seed health IT rounds under $10M with no managed care angle
+- Pure dental, vision, or supplemental insurance with no MA overlap
 """
 
-# Keywords and company names for relevance detection (used in prompts)
 DIRECT_COMPETITOR_NAMES = [
-    "duck creek", "majesco", "sapiens", "insurity", "oneshield", "applied systems",
-    "eis group", "socotra", "instanda", "fineos", "unqork", "appian",
+    "cvs health", "aetna", "elevance health", "anthem", "centene",
+    "humana", "privia health", "blue cross blue shield", "bcbs",
+    "molina healthcare", "kaiser permanente", "hcsc",
 ]
 
 INDIRECT_COMPETITOR_NAMES = [
-    "shift technology", "gradient ai", "snapsheet", "five sigma", "clara analytics",
-    "tractable", "bdeo", "betterview", "cape analytics", "ccc intelligent",
-    "mitchell international", "solera", "audatex",
+    "amazon health", "one medical", "walmart health", "oscar health",
+    "clover health", "bright health",
 ]
 
-COMPETITOR_DOMAIN_KEYWORDS = [
-    "policy administration", "policy management", "claims management", "claims automation",
-    "billing management", "insurance platform", "insurance core system", "insurance SaaS",
-    "p&c insurance software", "property casualty software", "insurtech platform",
-    "insurance modernization", "carrier technology", "core insurance", "underwriting platform",
-    "FNOL", "first notice of loss", "claims adjudication", "insurance suite",
+REGULATORY_KEYWORDS = [
+    "medicare advantage", "medicare part d", "CMS rate notice", "final rule",
+    "star ratings", "RADV", "risk adjustment", "prior authorization",
+    "ACO REACH", "CMMI", "medicaid managed care", "value-based care",
+    "medical loss ratio", "MLR", "MA rate announcement", "Chris Klomp",
+    "managed care", "health plan enrollment", "PBM regulation",
 ]

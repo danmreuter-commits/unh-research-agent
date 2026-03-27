@@ -1,40 +1,30 @@
-name: GWRE Daily Intel Brief
+name: UNH Daily Intel Brief
 
-# ── When to run ───────────────────────────────────────────────────────────────
 on:
   schedule:
     # 12:00 UTC = 8:00 AM Eastern Time (US).
-    # To change: use https://crontab.guru — adjust the hour (0–23 UTC).
     - cron: '0 12 * * *'
-
-  # Lets you click "Run workflow" from the GitHub Actions tab at any time.
   workflow_dispatch:
 
-# ── What to do ────────────────────────────────────────────────────────────────
 jobs:
   daily-research:
     runs-on: ubuntu-latest
-    # Give the job write access so it can save dedup state back to the repo.
     permissions:
       contents: write
 
     steps:
-      # 1. Download your code
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Install Python
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      # 3. Install the three Python libraries this project needs
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # 4. Run the agent (secrets come from GitHub → Settings → Secrets)
-      - name: Run GWRE Research Agent
+      - name: Run UNH Research Agent
         env:
           ANTHROPIC_API_KEY:    ${{ secrets.ANTHROPIC_API_KEY }}
           EMAIL_FROM:           ${{ secrets.EMAIL_FROM }}
@@ -48,12 +38,10 @@ jobs:
           AIRTABLE_TABLE_NAME:  ${{ secrets.AIRTABLE_TABLE_NAME }}
         run: python main.py
 
-      # 5. Save the deduplication state so stories don't repeat across days.
-      #    If state.json didn't change (no new findings), this step is a no-op.
       - name: Save deduplication state
         run: |
-          git config user.name  "gwre-agent[bot]"
-          git config user.email "gwre-agent@users.noreply.github.com"
+          git config user.name  "unh-agent[bot]"
+          git config user.email "unh-agent@users.noreply.github.com"
           git add state.json || true
           git diff --staged --quiet || git commit -m "chore: update dedup state [skip ci]"
           git push || true
