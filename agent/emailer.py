@@ -18,7 +18,7 @@ import config
 logger = logging.getLogger(__name__)
 
 
-# ── Digest generation ─────────────────────────────────────────────────────────
+# ── Digest generation ─────────────────────────────────────────────
 
 _DIGEST_SYSTEM = """\
 You are an expert at writing ultra-concise executive intelligence briefs.
@@ -68,7 +68,7 @@ def generate_digest(findings: list[dict]) -> str:
     )
 
     response = client.messages.create(
-        model="claude-opus-4-6",
+        model="claude-sonnet-4-6",
         max_tokens=400,
         system=_DIGEST_SYSTEM,
         messages=[{"role": "user", "content": user_content}],
@@ -79,19 +79,16 @@ def generate_digest(findings: list[dict]) -> str:
     return text
 
 
-# ── HTML formatting ───────────────────────────────────────────────────────────
+# ── HTML formatting ───────────────────────────────────────────────
 
 def _to_html(subject: str, plain_bullets: str) -> str:
     """Wrap plain bullet text in a clean HTML email."""
-    # Convert • bullets to styled HTML list items
     items_html = ""
     for line in plain_bullets.splitlines():
         line = line.strip()
         if not line:
             continue
-        # Strip leading bullet char
         content = line.lstrip("•·-").strip()
-        # Bold the company name (text before first colon)
         if ":" in content:
             company, rest = content.split(":", 1)
             content = f"<strong>{company.strip()}</strong>:{rest}"
@@ -117,7 +114,7 @@ def _to_html(subject: str, plain_bullets: str) -> str:
 </html>"""
 
 
-# ── SMTP sending ──────────────────────────────────────────────────────────────
+# ── SMTP sending ────────────────────────────────────────────────
 
 def _send_smtp(subject: str, plain_body: str, html_body: str) -> None:
     """Send a multipart plain+HTML email via SMTP with STARTTLS."""
@@ -141,19 +138,9 @@ def _send_smtp(subject: str, plain_body: str, html_body: str) -> None:
     logger.info("Email sent → %s | subject: %s", config.EMAIL_TO, subject)
 
 
-# ── Public interface ──────────────────────────────────────────────────────────
+# ── Public interface ──────────────────────────────────────────────
 
 def send_digest(findings: list[dict], digest_text: str | None = None) -> None:
-    """
-    Dispatch the daily digest by email.
-
-    digest_text: pass a pre-generated digest string to avoid a second Claude
-    call (main.py generates it once and shares it with the database layer).
-    If omitted, the digest is generated here.
-
-    If SMTP credentials are not configured, the digest is printed to stdout
-    so the agent still works out of the box during development.
-    """
     today_str = datetime.now().strftime("%B %d, %Y")
     subject = f"GWRE Intel Brief – {today_str}"
 
