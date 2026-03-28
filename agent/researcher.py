@@ -159,12 +159,12 @@ def _run_block(client: anthropic.Anthropic, block: dict) -> list[dict]:
     messages       = [{"role": "user", "content": user_prompt}]
     accumulated    = ""
     continuations  = 0
-    max_cont       = 3
+    max_cont       = 1
 
     while continuations <= max_cont:
         response = client.messages.create(
             model="claude-sonnet-4-6",
-            max_tokens=3000,
+            max_tokens=1500,
             system=_SEARCH_SYSTEM,
             tools=[{"type": "web_search_20260209", "name": "web_search"}],
             messages=messages,
