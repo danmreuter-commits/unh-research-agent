@@ -3,7 +3,7 @@ name: UNH Daily Intel Brief
 on:
   schedule:
     # 12:00 UTC = 8:00 AM Eastern Time (US).
-    - cron: '0 12 * * *'
+    - cron: '0 12 * * 1,3,5'
   workflow_dispatch:
 
 jobs:
